@@ -1,0 +1,21 @@
+// Configuration GitHub Codespaces pour agent-sorycode
+{
+  "name": "agent-sorycode",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
+  "forwardPorts": [8085, 3000],
+  "portsAttributes": {
+    "8085": { "label": "Next.js (server-ngrok)", "onAutoForward": "notify" },
+    "3000": { "label": "Next.js (défaut)", "onAutoForward": "notify" }
+  },
+  "postCreateCommand": "npm install && cd server-ngrok && npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}

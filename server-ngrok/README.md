@@ -2,7 +2,32 @@
 
 Lance le serveur de développement Next.js du projet **agent-sorycode** et l'expose sur Internet via un tunnel **ngrok**, pour tester l'interface depuis un navigateur externe (mobile, autre machine, etc.).
 
-## Utilisation
+## 🚀 Dans un GitHub Codespace
+
+Le repo contient une config `.devcontainer/` : tout est installé automatiquement à la création du Codespace.
+
+1. Sur la page du repo : **Code → Codespaces → Create codespace on main**
+2. Une fois prêt (dépendances installées par `postCreateCommand`), dans le terminal :
+
+```bash
+npm run dev -- -p 8085
+```
+
+3. **Option A (Codespaces)** : VS Code affiche une notification pour le port 8085 → "Open in Browser" ; ou onglet **PORTS** → clic droit sur 8085 → **Port Visibility → Public** pour un URL accessible depuis n'importe quel navigateur externe.
+
+4. **Option B (ngrok, URL fixe)** : dans un **second terminal** :
+
+```bash
+cd server-ngrok
+npm start
+```
+
+> `npm start` lance aussi le serveur Next.js tout seul — utilise-le seul si le serveur n'est pas déjà démarré, sinon il y aura un conflit de port.
+
+Le preview ngrok est disponible sur :
+**https://broken-september-untreated.ngrok-free.dev**
+
+## En local
 
 ```bash
 cd server-ngrok
@@ -10,18 +35,9 @@ npm install
 npm start
 ```
 
-Le script :
-
-1. Démarre le serveur Next.js (`npm run dev`) sur le port **8085** depuis la racine du projet.
-2. Attend que le serveur soit prêt.
-3. Ouvre le tunnel ngrok sur le domaine gratuit `broken-september-untreated.ngrok-free.dev`.
-4. Affiche l'URL publique du preview.
-
 ## Arrêt
 
 `Ctrl+C` : ferme le tunnel et arrête proprement le serveur Next.js.
-
-## Variables utiles
 
 | Variable | Défaut | Description |
 |---|---|---|
