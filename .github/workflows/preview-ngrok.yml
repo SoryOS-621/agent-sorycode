@@ -1,0 +1,89 @@
+name: Preview (ngrok)
+
+# Lance le projet sur un runner GitHub Actions et l'expose via ngrok
+# pour tester l'interface depuis un navigateur externe.
+# Déclenchement : manuel (onglet Actions -> Run workflow)
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_minutes:
+        description: "Durée du preview en minutes (max 120)"
+        required: true
+        default: "60"
+
+# Un seul preview à la fois : une nouvelle exécution annule la précédente
+concurrency:
+  group: preview-ngrok
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies (projet + server-ngrok)
+        run: |
+          npm ci
+          cd server-ngrok
+          npm install
+
+      - name: Start server + ngrok tunnel
+        run: |
+          nohup node server-ngrok/index.js > preview.log 2>&1 &
+          echo "Démarrage du serveur et du tunnel ngrok ..."
+          for i in $(seq 1 60); do
+            if grep -q "Preview disponible" preview.log; then
+              break
+            fi
+            if grep -qiE "Erreur ngrok|EADDRINUSE" preview.log; then
+              echo "Échec du démarrage :"; cat preview.log; exit 1
+            fi
+            sleep 5
+          done
+          if ! grep -q "Preview disponible" preview.log; then
+            echo "Timeout de démarrage :"; cat preview.log; exit 1
+          fi
+          URL=$(grep -o 'https://[a-zA-Z0-9.-]*' preview.log | head -1)
+          echo "PREVIEW_URL=$URL" >> "$GITHUB_ENV"
+
+      - name: Show preview URL
+        run: |
+          echo "=========================================="
+          echo "✅ Preview disponible sur : ${PREVIEW_URL}"
+          echo "=========================================="
+          echo "### 🌐 Preview de agent-sorycode" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "L'interface est accessible ici : **${PREVIEW_URL}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "(Cliquer sur \"Visit Site\" sur la page d'avertissement ngrok.)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep preview alive
+        run: |
+          DURATION=${{ github.event.inputs.duration_minutes }}
+          if [ "$DURATION" -gt 120 ]; then DURATION=120; fi
+          echo "Preview actif pendant $DURATION minutes ..."
+          # Surveille le processus ; s'il meurt, on sort en erreur
+          for i in $(seq 1 $((DURATION * 6))); do
+            if ! pgrep -f "server-ngrok/index.js" > /dev/null; then
+              echo "Le processus s'est arrêté prématurément :"
+              tail -50 preview.log
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Stop preview
+        if: always()
+        run: |
+          pkill -f "server-ngrok/index.js" || true
+          pkill -f "next dev" || true
+          echo "Preview arrêté."
