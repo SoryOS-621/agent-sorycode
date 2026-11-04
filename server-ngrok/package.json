@@ -1,0 +1,13 @@
+{
+  "name": "server-ngrok",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lance le serveur Next.js d'agent-sorycode et l'expose via un tunnel ngrok pour un preview externe.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@ngrok/ngrok": "^1.6.1"
+  }
+}
