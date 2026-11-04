@@ -5,6 +5,11 @@ name: Preview (ngrok)
 # Déclenchement : manuel (onglet Actions -> Run workflow)
 
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - "readme-assets/**"
   workflow_dispatch:
     inputs:
       duration_minutes:
