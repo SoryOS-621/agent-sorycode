@@ -74,6 +74,7 @@ jobs:
       - name: Keep preview alive
         run: |
           DURATION=${{ github.event.inputs.duration_minutes }}
+          if [ -z "$DURATION" ]; then DURATION=60; fi
           if [ "$DURATION" -gt 120 ]; then DURATION=120; fi
           echo "Preview actif pendant $DURATION minutes ..."
           # Surveille le processus ; s'il meurt, on sort en erreur
